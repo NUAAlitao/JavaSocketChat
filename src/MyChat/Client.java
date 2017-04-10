@@ -3,12 +3,14 @@ package MyChat;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -199,7 +201,7 @@ class ChatOut extends Thread{
 	Massege massege;
 	ChatFrame chatFrame;
 	String myname;
-	DataOutputStream out=null;
+	BufferedWriter out=null;
 	
 	public ChatOut(Socket socket, String friendname,String myname, Massege massege,ChatFrame chatFrame){
 		this.socket=socket;
@@ -212,7 +214,7 @@ class ChatOut extends Thread{
 	@Override
 	public void run(){
 		try{
-				out = new DataOutputStream(socket.getOutputStream());
+				out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 				
 				chatFrame.jbSend.addActionListener(new ActionListener() {
 					
@@ -226,7 +228,8 @@ class ChatOut extends Thread{
 						chatFrame.jta.setText(massege.getMassege());
 						chatFrame.jmassege.setText("");
 						try {
-							out.writeBytes(temp1+'\n');
+							out.write(temp1+'\n');
+							out.flush();
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();

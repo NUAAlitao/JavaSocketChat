@@ -1,6 +1,7 @@
 package MyChat;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -23,24 +25,26 @@ public class Server {
 		// TODO Auto-generated method stub
 		initUsers();
 		BufferedReader in;
-		DataOutputStream out;
+		BufferedWriter out;
 		String login,name,pwd;
 		ServerSocket server = new ServerSocket(2555);
 		while(true){
 			Socket socket = server.accept();
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			out = new DataOutputStream(socket.getOutputStream());
+			out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			login = in.readLine();
 			System.out.println("socket:" + socket);
 			System.out.println("收到信息:"+login);
 			String []temp = login.split(" ");  //读取登录的名字和密码
 			if(((users.get(temp[0]))!=null) &&(users.get(temp[0]).equals(temp[1])) ){
-				out.writeBytes("OK"+'\n');   //能登录
+				out.write("OK"+'\n');   //能登录
+				out.flush();
 				socketList.put(temp[0], socket);
 				new ServerThread(socketList, socket).start();
 			}
 			else{
-				out.writeBytes("NO"+'\n');   //不能登录
+				out.write("NO"+'\n');   //不能登录
+				out.flush();
 			}
 		}
 	}
@@ -63,7 +67,7 @@ class ServerThread extends Thread{
 	Socket socket1,socket2;
 	private  Map<String, Socket> socketList = new HashMap<>();
 	BufferedReader in;
-	DataOutputStream out;
+	BufferedWriter out;
 	
 	public ServerThread(Map<String, Socket> socketList, Socket socket){
 		this.socket1 = socket;
@@ -79,8 +83,9 @@ class ServerThread extends Thread{
 				System.out.println(massege);
 				String [] temp=massege.split("-");
 				socket2 = socketList.get(temp[0]);
-				out = new DataOutputStream(socket2.getOutputStream());
-				out.writeBytes(massege+'\n');
+				out = new BufferedWriter(new OutputStreamWriter(socket2.getOutputStream()));
+				out.write(massege+'\n');
+				out.flush();
 			}
 		}catch(IOException e){
 			e.printStackTrace();
