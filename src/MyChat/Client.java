@@ -30,13 +30,13 @@ public class Client {
 	private static PersonalFrame personal = null;
 
 	
-	private static String name,pwd;
-
-	public static String massegeAll="";
-	
+	private static String name,pwd;	
 	private static String friend="";
 	private static Socket socket = null;
 	
+	private static boolean chatFlag = false;
+	private static Map<String, ChatFrame> chatWindows = new HashMap<>();
+	private static Map<String, Massege> massegeAll = new HashMap<>();
 	
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub	
@@ -148,16 +148,24 @@ public class Client {
 				// TODO Auto-generated method stub
 				String friendname=null;
 				Massege massege = new Massege();
-			    friendname = personal.jfriend.getText();
-				if(friends.get(friendname)!=null){
-					ChatFrame chatFrame = new ChatFrame(name,friendname);					
-					new ChatIn(socket, friendname, massege, chatFrame).start();
+				
+				
+			    friendname = personal.jfriend.getText();  
+				if(friends.get(friendname)!=null){	
+					ChatFrame chatFrame = new ChatFrame(name,friendname);	
+					massegeAll.put(friendname, massege);
+					chatWindows.put(friendname, chatFrame);
 					new ChatOut(socket, friendname, name, massege, chatFrame).start();
+					if(chatFlag==false){
+						new ChatIn(socket, friendname, massegeAll, chatWindows).start();
+						chatFlag = true;
+					}
 				}
 				else{
 					personal.jfriend.setText("你和"+friendname+"不是好友，不能聊天");
 				}
 			}
+			
 		});
 	}
 }
@@ -168,12 +176,14 @@ class ChatIn extends Thread{
 	String friendname;
 	Massege massege;
 	ChatFrame chatFrame;
+	Map<String, ChatFrame> chatWindows;
+	Map<String, Massege> massegeAll;
 	
-	public ChatIn(Socket socket, String friendname,Massege massege,ChatFrame chatFrame){
+	public ChatIn(Socket socket, String friendname,Map<String, Massege> massegeAll,Map<String, ChatFrame> chatWindows){
 		this.socket = socket;
 		this.friendname = friendname;
-		this.massege = massege;
-		this.chatFrame = chatFrame;
+		this.massegeAll = massegeAll;
+		this.chatWindows = chatWindows;
 	}
 	@Override
 	public void run(){
@@ -182,12 +192,13 @@ class ChatIn extends Thread{
 				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				String input = in.readLine();
 				String [] temp = input.split("-");
-				if(temp[1].equals(friendname)){
-					String temp1="";
-					temp1=temp1+friendname+": "+temp[2];
-					massege.setMassege(temp1);
-					chatFrame.jta.setText(massege.getMassege());
-				}
+				chatFrame = chatWindows.get(temp[1]);     //查抄到当前朋友的聊天框
+				massege = massegeAll.get(temp[1]);
+				String temp1="";
+				temp1=temp1+temp[1]+": "+temp[2];
+				massege.setMassege(temp1);
+				chatFrame.jta.setText(massege.getMassege());
+				
 			}
 		}catch(IOException e){
 			e.printStackTrace();
@@ -223,7 +234,7 @@ class ChatOut extends Thread{
 						// TODO Auto-generated method stub
 						String temp = chatFrame.jmassege.getText();
 						String temp1=friendname+ "-" + myname + "-" +temp;
-						String temp2 = myname+": "+temp;
+						String temp2 = "我: "+temp;
 						massege.setMassege(temp2);
 						chatFrame.jta.setText(massege.getMassege());
 						chatFrame.jmassege.setText("");
