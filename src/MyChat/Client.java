@@ -87,7 +87,7 @@ public class Client {
 						e2.printStackTrace();
 					}
 					try {
-						out.writeBytes(name+" "+pwd+'\n');
+						out.writeBytes(name+" "+pwd+" login"+'\n');    //向服务器发送登录消息
 					} catch (IOException e2) {
 						// TODO Auto-generated catch block
 						e2.printStackTrace();
@@ -138,6 +138,78 @@ public class Client {
 					}				
 			}
 		});
+		
+		login.jb2.addActionListener(new ActionListener() {	
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				name = login.jname.getText();
+				pwd = login.jpwd.getText();
+				InetAddress addr = null;
+				try {
+					addr = InetAddress.getByName("localhost");
+				} catch (UnknownHostException e3) {
+					// TODO Auto-generated catch block
+					e3.printStackTrace();
+				}
+				try {
+					socket = new Socket(addr, 2555);
+				} catch (UnknownHostException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				String massege = null;
+				BufferedReader in = null;
+				DataOutputStream out = null;
+				
+				try {
+					in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				try {
+					out = new DataOutputStream(socket.getOutputStream());
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				try {
+					out.writeBytes(name+" "+pwd+" register"+'\n');    //向服务器发送注册消息
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				try {
+					massege = in.readLine();
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				if(massege.equals("OK")){
+					String temp = new File("").getAbsolutePath();
+					name = temp+'/'+name;
+					File file = new File(name);
+					
+					if(!file.exists()){
+						try {
+							file.createNewFile();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					login.jname.setText("注册成功，可以登录了！");
+				}
+				else{
+					login.jname.setText("该用户已存在！");
+				}				
+			}
+		});
+		
 	}
 
 	public static void initChat(){
@@ -167,6 +239,15 @@ public class Client {
 			}
 			
 		});
+		
+		personal.jbExit.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				System.exit(0);
+			}
+		});
 	}
 }
 
@@ -192,7 +273,7 @@ class ChatIn extends Thread{
 				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				String input = in.readLine();
 				String [] temp = input.split("-");
-				chatFrame = chatWindows.get(temp[1]);     //查抄到当前朋友的聊天框
+				chatFrame = chatWindows.get(temp[1]);     //查找到当前朋友的聊天框
 				massege = massegeAll.get(temp[1]);
 				String temp1="";
 				temp1=temp1+temp[1]+": "+temp[2];

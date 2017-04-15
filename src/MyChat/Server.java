@@ -7,9 +7,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -25,24 +27,33 @@ public class Server {
 		// TODO Auto-generated method stub
 		initUsers();
 		BufferedReader in;
-		BufferedWriter out;
+		PrintWriter out;
 		String login,name,pwd;
 		ServerSocket server = new ServerSocket(2555);
 		while(true){
 			Socket socket = server.accept();
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 			login = in.readLine();
 			System.out.println("socket:" + socket);
 			System.out.println("收到信息:"+login);
 			String []temp = login.split(" ");  //读取登录的名字和密码
-			if(((users.get(temp[0]))!=null) &&(users.get(temp[0]).equals(temp[1])) ){
+			if(temp[2].equals("register") && (users.get(temp[0])==null)){   //新注册的用户不存在
+				users.put(temp[0], temp[1]);
+				out.println("OK"+'\n');        //能注册
+				out.flush();
+			}
+			else if(temp[2].equals("register")){
+				out.write("NO"+'\n');
+				out.flush();
+			}
+			if( temp[2].equals("login") && ((users.get(temp[0]))!=null) &&(users.get(temp[0]).equals(temp[1])) ){
 				out.write("OK"+'\n');   //能登录
 				out.flush();
 				socketList.put(temp[0], socket);
 				new ServerThread(socketList, socket).start();
 			}
-			else{
+			else if(temp[2].equals("login")){
 				out.write("NO"+'\n');   //不能登录
 				out.flush();
 			}
@@ -65,7 +76,7 @@ public class Server {
 
 class ServerThread extends Thread{
 	Socket socket1,socket2;
-	private  Map<String, Socket> socketList = new HashMap<>();
+	private  Map<String, Socket> socketList;
 	BufferedReader in;
 	BufferedWriter out;
 	
@@ -75,20 +86,45 @@ class ServerThread extends Thread{
 	}
 	@Override
 	public void run(){
-		try{
 			while(true){
-				in = new BufferedReader(new InputStreamReader(socket1.getInputStream()));
+				try {
+					in = new BufferedReader(new InputStreamReader(socket1.getInputStream()));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				String massege=null;
-				massege = in.readLine();
+				try {
+					massege = in.readLine();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				System.out.println(massege);
 				String [] temp=massege.split("-");
-				socket2 = socketList.get(temp[0]);
-				out = new BufferedWriter(new OutputStreamWriter(socket2.getOutputStream()));
-				out.write(massege+'\n');
-				out.flush();
+				//当对方没登录时不发送消息
+				if((socket2 = socketList.get(temp[0]))==null){
+					continue;
+				}
+				try {
+					out = new BufferedWriter(new OutputStreamWriter(socket2.getOutputStream()));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					out.write(massege+'\n');
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					out.flush();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		
 	}
 }

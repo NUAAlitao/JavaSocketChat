@@ -46,6 +46,6 @@ public class ChatFrame extends JFrame{
 		
 		this.setSize(400,500);
 		this.setVisible(true);
-		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 }
