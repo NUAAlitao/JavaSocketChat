@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -21,14 +22,13 @@ import java.util.Map.Entry;
 
 import Frame.ChatFrame;
 import Frame.LoginFrame;
-import Frame.PersonalFrame;
+import ChatFrame.PersonalFrame;
 
 
 public class Client {
 	private static Map<String, String> friends = new HashMap<>();
 	private static LoginFrame login = null;
 	private static PersonalFrame personal = null;
-
 	
 	private static String name,pwd;	
 	private static String friend="";
@@ -130,7 +130,7 @@ public class Client {
 							Map.Entry now = (Entry) iter.next();
 							friend = friend + now.getValue()+'\n';
 						}
-						personal.jta.setText(friend);	
+						personal.friendArea.setText(friend);	
 						initChat();
 					}
 					else{
@@ -222,7 +222,7 @@ public class Client {
 				Massege massege = new Massege();
 				
 				
-			    friendname = personal.jfriend.getText();  
+			    friendname = personal.friendName.getText();  
 				if(friends.get(friendname)!=null){	
 					ChatFrame chatFrame = new ChatFrame(name,friendname);	
 					massegeAll.put(friendname, massege);
@@ -234,7 +234,7 @@ public class Client {
 					}
 				}
 				else{
-					personal.jfriend.setText("你和"+friendname+"不是好友，不能聊天");
+					personal.friendName.setText("你和"+friendname+"不是好友，不能聊天");
 				}
 			}
 			
@@ -246,6 +246,73 @@ public class Client {
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				System.exit(0);
+			}
+		});
+		
+		personal.jbsearchuser.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String temp;
+				String [] temps;
+				String users="";
+				File file = new File("Users.txt");
+				BufferedReader in = null;		
+				try {
+					in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+				} catch (FileNotFoundException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				try {
+					while((temp = in.readLine()) != null){
+						temps = temp.split(" ");
+						users = users + temps[0] + '\n';
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}	
+				try {
+					in.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}	
+				personal.userArea.setText(users);
+			}
+		});
+		
+		personal.jbaddfriend.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String friendname = personal.addfriendname.getText();
+				friends.put(friendname, friendname);
+				friend = friend + friendname +'\n';
+				personal.friendArea.setText(friend);
+				BufferedWriter fileout = null;
+				try {
+					 fileout = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(name, true)));
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					fileout.write('\n'+friendname);
+					fileout.flush();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					fileout.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 	}

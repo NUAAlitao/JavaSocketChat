@@ -1,5 +1,6 @@
 package Frame;
 
+import java.awt.Font;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
@@ -45,6 +46,8 @@ public class ChatFrame extends JFrame{
 		this.add(jp1);
 		
 		this.setSize(400,500);
+		this.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+		this.setTitle(name+" chatting with "+friendname);
 		this.setVisible(true);
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}

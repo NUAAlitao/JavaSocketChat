@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -42,6 +43,13 @@ public class Server {
 				users.put(temp[0], temp[1]);
 				out.println("OK"+'\n');        //ÄÜ×¢²á
 				out.flush();
+				String user = "";
+				File file = new File("Users.txt");
+				BufferedWriter fileout = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+				user = '\n'+temp[0]+" "+temp[1];
+				fileout.write(user);
+				fileout.flush();
+				out.close();
 			}
 			else if(temp[2].equals("register")){
 				out.write("NO"+'\n');
